@@ -108,6 +108,8 @@ footer a{color:var(--gold);text-decoration:none}
 <nav id="nav">
   <button data-t="overview" class="active">Overview</button>
   <button data-t="map">Object map</button>
+  <button data-t="build">What we build</button>
+  <button data-t="qbsetup">QuickBooks setup</button>
   <button data-t="sync">What syncs</button>
   <button data-t="lifecycle">Cost lifecycle</button>
   <button data-t="writeoff">Write-offs</button>
@@ -149,7 +151,7 @@ footer a{color:var(--gold);text-decoration:none}
   <table>
     <tr><th>CaseCloud object</th><th>QuickBooks</th><th>Direction</th><th>What it means</th></tr>
     <tr><td><code>advpm__Matter__c</code></td><td>Customer : Job</td><td><span class="pill push">PUSH</span></td><td>Every matter becomes a QuickBooks Customer (Job). The link is stored in a QB Customer ID field on the matter.</td></tr>
-    <tr><td><code>advpm__Expense__c</code></td><td>Check / Purchase</td><td><span class="pill push">PUSH</span></td><td>Once an expense is Requested with a Method, the middleware creates a check in QuickBooks.</td></tr>
+    <tr><td><code>advpm__Expense__c</code> &#8594; <code>Disbursement__c</code></td><td>Check / Purchase</td><td><span class="pill push">PUSH</span></td><td>A cost generates a <code>Disbursement__c</code> (our custom check-request record); once it is Requested with a Method, the middleware creates the check in QuickBooks.</td></tr>
     <tr><td><code>advpm__Trust__c</code><br><code>advpm__Trust_Transaction__c</code></td><td>Trust Deposit &amp; Liability</td><td><span class="pill push">PUSH</span></td><td>Settlement funds post as a trust deposit; disbursements draw the trust liability down. The trust ledger updates on the matter.</td></tr>
     <tr><td><code>advpm__Payment__c</code></td><td>Income / Deposit</td><td><span class="pill push">PUSH</span></td><td>Earned attorney fees are recognized as income in QuickBooks.</td></tr>
     <tr><td><code>advpm__Participant__c</code> / <code>Account</code></td><td>Vendor</td><td><span class="pill push">PUSH</span></td><td>A payee (vendor, expert, provider, lienholder) maps to a QB Vendor. The W-9 flag propagates to related transactions.</td></tr>
@@ -158,7 +160,86 @@ footer a{color:var(--gold);text-decoration:none}
   </table>
   <div class="callout gold">
     <h4>Design note</h4>
-    <p style="margin:0">CaseCloud does not ship a native &#8220;Resolution&#8221; or &#8220;Damages&#8221; object the way Litify does. We reproduce that behavior with the native Trust and Expense objects plus a lightweight custom <b>Settlement</b> record and a set of custom fields (below). This is called out so the build scope is clear up front.</p>
+    <p style="margin:0">The integration runs on native CaseCloud (<code>advpm__</code>) objects wherever they exist. CaseCloud has no native check/disbursement record and no native settlement/recovery record, so ACS builds two small custom objects &#8212; <code>Disbursement__c</code> and <code>Settlement__c</code> &#8212; plus a set of custom fields. The <b>What we build</b> tab lists exactly what is native and what we create.</p>
+  </div>
+</section>
+
+<!-- ================= WHAT WE BUILD ================= -->
+<section id="build">
+  <h2 class="sec">What we build &#8212; objects &amp; fields</h2>
+  <p class="lead">The integration runs on native CaseCloud (<code>advpm__</code>) objects wherever they exist. CaseCloud has no native check/disbursement record and no native settlement/recovery record, so ACS builds two small custom objects plus the custom fields that carry the sync. Here is exactly what is native and what we create.</p>
+
+  <h3 class="sub">Native CaseCloud objects we use (not created)</h3>
+  <table>
+    <tr><th>Object</th><th>Role in the integration</th></tr>
+    <tr><td><code>advpm__Matter__c</code></td><td>The matter &#8212; maps to a QuickBooks Customer (Job).</td></tr>
+    <tr><td><code>advpm__Expense__c</code></td><td>Hard costs / advanced case expenses.</td></tr>
+    <tr><td><code>advpm__Trust__c</code></td><td>Matter trust account and running trust balance.</td></tr>
+    <tr><td><code>advpm__Trust_Transaction__c</code></td><td>Individual trust deposits and disbursements.</td></tr>
+    <tr><td><code>advpm__Payment__c</code></td><td>Fee / income payments.</td></tr>
+    <tr><td><code>advpm__Fee_Arrangement__c</code></td><td>Contingency % that drives the attorney-fee calculation.</td></tr>
+    <tr><td><code>advpm__Participant__c</code> / <code>Account</code></td><td>Payees &#8212; vendors, experts, providers, lienholders, and the client.</td></tr>
+  </table>
+
+  <h3 class="sub">Custom objects ACS creates</h3>
+  <table>
+    <tr><th>New object</th><th>Why it exists</th><th>What it does</th></tr>
+    <tr><td><code>Disbursement__c</code></td><td>CaseCloud has no native check / money-movement record.</td><td>The sync record that becomes a QuickBooks check. Carries Method, Disbursement Account, Integration Status, Check Number, and Integration ID. Links to Matter, Expense (for reimbursements), and the payee.</td></tr>
+    <tr><td><code>Settlement__c</code></td><td>CaseCloud has no native settlement / recovery object.</td><td>Records a recovery (Amount Received), triggers the trust deposit, and launches the distribution waterfall.</td></tr>
+  </table>
+
+  <h3 class="sub">Custom fields ACS creates</h3>
+  <table>
+    <tr><th>On object</th><th>Fields we add</th></tr>
+    <tr><td><code>Disbursement__c</code> <span class="note">(custom)</span></td><td><code>Method__c</code> &middot; <code>Disbursement_Account__c</code> &middot; <code>Integration_Status__c</code> &middot; <code>Check_Number__c</code> &middot; <code>Integration_ID__c</code></td></tr>
+    <tr><td><code>advpm__Expense__c</code></td><td><code>Amount_Written_Off__c</code> &middot; <code>Amount_Reimbursed_from_Trust__c</code> &middot; <code>Amount_Paid_After_Reimbursement__c</code> (formula)</td></tr>
+    <tr><td><code>advpm__Matter__c</code></td><td><code>QB_Customer_ID__c</code></td></tr>
+    <tr><td><code>Settlement__c</code> <span class="note">(custom)</span></td><td><code>Amount_Received__c</code> &middot; distribution roll-ups</td></tr>
+    <tr><td><code>Account</code> / <code>advpm__Participant__c</code></td><td><code>W9_Obtained__c</code></td></tr>
+  </table>
+</section>
+
+<!-- ================= QUICKBOOKS SETUP ================= -->
+<section id="qbsetup">
+  <h2 class="sec">QuickBooks setup &#8212; the two-account model</h2>
+  <p class="lead">Legal accounting requires the firm&#8217;s money and client money to stay strictly separate. In QuickBooks that means <b>two bank accounts</b> &#8212; Operating and Trust &#8212; plus a Trust Liability account so client funds never appear as firm income.</p>
+
+  <figure id="qbfig"></figure>
+
+  <div class="grid2">
+    <div class="card" style="border-top:4px solid var(--green)">
+      <h3 class="sub" style="margin-top:0;color:#1c7c3a">1 &middot; Operating account</h3>
+      <p><b>The firm&#8217;s money</b> &#8212; earned fees and costs the firm advances on a client&#8217;s behalf.</p>
+      <ul class="clean dos">
+        <li><span class="chk">&#10003;</span> Firm pays case costs from here (Step 1 of the cost lifecycle).</li>
+        <li><span class="chk">&#10003;</span> Earned attorney fees land here as income.</li>
+        <li><span class="chk">&#10003;</span> Receives reimbursements from Trust.</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:4px solid var(--blue)">
+      <h3 class="sub" style="margin-top:0;color:var(--blue)">2 &middot; Trust (IOLTA) account</h3>
+      <p><b>The client&#8217;s money</b> &#8212; settlement funds held on behalf of clients until disbursed.</p>
+      <ul class="clean dos">
+        <li><span class="chk">&#10003;</span> Settlement deposits land here.</li>
+        <li><span class="chk">&#10003;</span> Liens, providers, and the client are paid from here.</li>
+        <li><span class="chk">&#10003;</span> Reimburses Operating for advanced costs.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3 class="sub">The QuickBooks accounts we create</h3>
+  <table>
+    <tr><th>QB account</th><th>Type</th><th>Purpose</th></tr>
+    <tr><td><b>Operating</b></td><td>Bank</td><td>Firm&#8217;s checking account &#8212; fees earned and firm-advanced costs.</td></tr>
+    <tr><td><b>Trust / IOLTA</b></td><td>Bank</td><td>Client funds held in trust, separated from firm money.</td></tr>
+    <tr><td><b>Trust Liability</b></td><td>Other Current Liability</td><td>Offsets the Trust bank so client funds are never counted as firm income. Every deposit raises it; every disbursement lowers it. It should always equal the Trust bank balance.</td></tr>
+    <tr><td><b>Legal Fee Income</b></td><td>Income</td><td>Earned attorney fees recognized from settlements.</td></tr>
+    <tr><td><b>Advanced Client Costs</b></td><td>Other Current Asset</td><td>Costs the firm fronts and expects to recover from trust.</td></tr>
+  </table>
+
+  <div class="callout blue">
+    <h4>Why the Trust Liability account matters</h4>
+    <p style="margin:0">Client money is a liability, not revenue. Pairing the Trust bank with a Trust Liability account keeps the books compliant: the two always move together and net to zero for the firm. The integration posts to both automatically &#8212; deposits raise the liability, disbursements lower it.</p>
   </div>
 </section>
 
@@ -271,11 +352,11 @@ footer a{color:var(--gold);text-decoration:none}
   <p class="lead">These are the fields that, when missing or wrong, cause most sync failures. We build and place them during setup; your team keeps them accurate.</p>
   <table>
     <tr><th>On object</th><th>Field</th><th>What it does / what to watch</th></tr>
-    <tr><td>Transaction</td><td><b>Method</b></td><td>Tells the system how money moves (Check, ACH, Credit Card, Non-Ledger). If blank, the transaction never reaches QuickBooks. Populate before saving.</td></tr>
-    <tr><td>Transaction</td><td><b>Disbursement Account</b></td><td>Operating / Trust / Non-Ledger &#8212; determines which QuickBooks register the money draws from (and whether it syncs at all).</td></tr>
-    <tr><td>Transaction</td><td><b>Integration Status</b></td><td>Tracks lifecycle (Generated &#8594; Requested &#8594; Generated &#8594; Reimbursed). Automation-driven &#8212; manual edits break the trust roll-up.</td></tr>
-    <tr><td>Transaction</td><td><b>Check Number</b></td><td>Populated by QuickBooks after the check prints. Blank if the check was made manually in QB or the write-back is paused.</td></tr>
-    <tr><td>Transaction</td><td><b>Integration ID</b></td><td>The QuickBooks TxnId &#8212; proof the record linked. Blank means it never reached QB.</td></tr>
+    <tr><td><code>Disbursement__c</code></td><td><b>Method</b></td><td>Tells the system how money moves (Check, ACH, Credit Card, Non-Ledger). If blank, the transaction never reaches QuickBooks. Populate before saving.</td></tr>
+    <tr><td><code>Disbursement__c</code></td><td><b>Disbursement Account</b></td><td>Operating / Trust / Non-Ledger &#8212; determines which QuickBooks register the money draws from (and whether it syncs at all).</td></tr>
+    <tr><td><code>Disbursement__c</code></td><td><b>Integration Status</b></td><td>Tracks lifecycle (Generated &#8594; Requested &#8594; Generated &#8594; Reimbursed). Automation-driven &#8212; manual edits break the trust roll-up.</td></tr>
+    <tr><td><code>Disbursement__c</code></td><td><b>Check Number</b></td><td>Populated by QuickBooks after the check prints. Blank if the check was made manually in QB or the write-back is paused.</td></tr>
+    <tr><td><code>Disbursement__c</code></td><td><b>Integration ID</b></td><td>The QuickBooks TxnId &#8212; proof the record linked. Blank means it never reached QB.</td></tr>
     <tr><td>Expense</td><td><b>Amount Reimbursed from Trust</b></td><td>How much of a firm-paid expense trust has repaid. Auto-populates; blank on a paid expense means the automation did not fire.</td></tr>
     <tr><td>Expense</td><td><b>Status</b></td><td>Pending &#8594; Approved &#8594; Requested &#8594; Paid &#8594; Reimbursed. Auto-flips to Reimbursed when the write-back lands.</td></tr>
     <tr><td>Matter</td><td><b>QB Customer ID</b></td><td>The link to the QB Customer. Diagnostic &#8212; if blank on an older matter, we may need to relink.</td></tr>
@@ -342,6 +423,54 @@ footer a{color:var(--gold);text-decoration:none}
   <div>Jason Adams, Founder &middot; <a href="mailto:jason@advocatecloudsolutions.com">jason@advocatecloudsolutions.com</a> &middot; (612) 528-3008</div>
 </footer>
 </div>
+
+<!-- ===== QuickBooks two-account diagram (injected) ===== -->
+<template id="qbsvg">
+<svg viewBox="0 0 1180 560" xmlns="http://www.w3.org/2000/svg" font-family="Montserrat,Arial,sans-serif">
+  <defs>
+    <marker id="aq" markerWidth="11" markerHeight="11" refX="8" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11 Z" fill="#0057B8"/></marker>
+    <marker id="agn" markerWidth="11" markerHeight="11" refX="8" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11 Z" fill="#28A745"/></marker>
+  </defs>
+  <rect width="1180" height="560" fill="#ffffff"/>
+  <text x="40" y="40" font-size="15" fill="#555" font-family="Lato,Arial">Two bank accounts, never mixed &#8212; plus a Trust Liability that mirrors the Trust bank</text>
+
+  <text x="860" y="76" font-size="12.5" fill="#003D80" text-anchor="middle" font-family="Lato,Arial">Settlement deposit</text>
+  <line x1="860" y1="86" x2="860" y2="126" stroke="#0057B8" stroke-width="3" marker-end="url(#aq)"/>
+
+  <rect x="140" y="130" width="360" height="175" rx="14" fill="#f2fbf5" stroke="#28A745" stroke-width="2.5"/>
+  <text x="320" y="172" font-size="19" font-weight="700" fill="#1c7c3a" text-anchor="middle">OPERATING</text>
+  <text x="320" y="196" font-size="12.5" fill="#555" text-anchor="middle" font-family="Lato,Arial">The firm&#8217;s money</text>
+  <text x="320" y="228" font-size="12.5" fill="#333" text-anchor="middle" font-family="Lato,Arial">&#8226; Earned attorney fees (income)</text>
+  <text x="320" y="250" font-size="12.5" fill="#333" text-anchor="middle" font-family="Lato,Arial">&#8226; Firm-advanced case costs</text>
+  <text x="320" y="272" font-size="12.5" fill="#333" text-anchor="middle" font-family="Lato,Arial">&#8226; Receives reimbursements from Trust</text>
+
+  <rect x="680" y="130" width="360" height="175" rx="14" fill="#eef5ff" stroke="#0057B8" stroke-width="2.5"/>
+  <text x="860" y="172" font-size="19" font-weight="700" fill="#0057B8" text-anchor="middle">TRUST / IOLTA</text>
+  <text x="860" y="196" font-size="12.5" fill="#555" text-anchor="middle" font-family="Lato,Arial">The client&#8217;s money</text>
+  <text x="860" y="228" font-size="12.5" fill="#333" text-anchor="middle" font-family="Lato,Arial">&#8226; Settlement funds held in trust</text>
+  <text x="860" y="250" font-size="12.5" fill="#333" text-anchor="middle" font-family="Lato,Arial">&#8226; Pays liens, providers, client</text>
+  <text x="860" y="272" font-size="12.5" fill="#333" text-anchor="middle" font-family="Lato,Arial">&#8226; Reimburses Operating</text>
+
+  <rect x="680" y="320" width="360" height="42" rx="10" fill="#E8F0FE" stroke="#9dc0ef"/>
+  <text x="860" y="346" font-size="12" font-weight="700" fill="#003D80" text-anchor="middle" font-family="Montserrat">Trust Liability &#8212; mirrors Trust bank (nets to zero)</text>
+
+  <line x1="676" y1="215" x2="504" y2="215" stroke="#0057B8" stroke-width="4" marker-end="url(#aq)"/>
+  <rect x="512" y="176" width="156" height="30" rx="15" fill="#0057B8"/>
+  <text x="590" y="196" font-size="11.5" font-weight="700" fill="#fff" text-anchor="middle">reimburse + fees</text>
+
+  <line x1="320" y1="305" x2="320" y2="392" stroke="#28A745" stroke-width="3.5" marker-end="url(#agn)"/>
+  <rect x="200" y="398" width="240" height="44" rx="10" fill="#fff" stroke="#8fd0a5"/>
+  <text x="320" y="425" font-size="12.5" font-weight="700" fill="#1c7c3a" text-anchor="middle" font-family="Montserrat">Pay case cost &#8594; vendor</text>
+
+  <line x1="860" y1="362" x2="860" y2="392" stroke="#0057B8" stroke-width="3.5" marker-end="url(#aq)"/>
+  <rect x="700" y="398" width="320" height="44" rx="10" fill="#fff" stroke="#9dc0ef"/>
+  <text x="860" y="425" font-size="12.5" font-weight="700" fill="#003D80" text-anchor="middle" font-family="Montserrat">Pay client &#183; liens &#183; providers</text>
+
+  <rect x="140" y="478" width="900" height="54" rx="10" fill="#1A1A1A"/>
+  <text x="165" y="502" font-size="12.5" fill="#FFD700" font-weight="700" font-family="Montserrat">Rule</text>
+  <text x="165" y="522" font-size="12.5" fill="#fff" font-family="Lato,Arial">Firm money and client money never mix. The integration always posts trust activity to both the Trust bank and the Trust Liability.</text>
+</svg>
+</template>
 
 <!-- ===== main flow diagram (injected) ===== -->
 <template id="flowsvg">
@@ -475,13 +604,18 @@ footer a{color:var(--gold);text-decoration:none}
 
 <script>
 (function(){
+  // inject SVG diagrams
   document.getElementById('flowfig').innerHTML =
      document.getElementById('flowsvg').innerHTML +
      '<figcaption>Figure 1 &#8212; The end-to-end flow between CaseCloud, DBSync, and QuickBooks Online.</figcaption>';
+  document.getElementById('qbfig').innerHTML =
+     document.getElementById('qbsvg').innerHTML +
+     '<figcaption>Figure 2 &#8212; The two-account QuickBooks setup: Operating (firm money) and Trust (client money), with a mirroring Trust Liability.</figcaption>';
   document.getElementById('waterfig').innerHTML =
      document.getElementById('watersvg').innerHTML +
-     '<figcaption>Figure 2 &#8212; The settlement-distribution waterfall, in enforced order.</figcaption>';
+     '<figcaption>Figure 3 &#8212; The settlement-distribution waterfall, in enforced order.</figcaption>';
 
+  // nav
   var btns = document.querySelectorAll('#nav button');
   var secs = document.querySelectorAll('main section');
   function show(t){
