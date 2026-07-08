@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CaseCloud &#8596; QuickBooks — Integration Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blue:#0057B8; --dark:#003D80; --lblue:#E8F0FE; --silver:#ADADAD;
+  --lsilver:#F5F5F5; --gold:#FFD700; --charcoal:#1A1A1A; --white:#FAFAFA;
+  --green:#28A745; --amber:#FFC107; --red:#DC3545;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Lato',Helvetica,Arial,sans-serif;color:var(--charcoal);background:#eef1f5;line-height:1.55}
+h1,h2,h3,h4{font-family:'Montserrat',Arial,sans-serif}
+.wrap{max-width:1120px;margin:0 auto;background:var(--white);min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,.08)}
+
+/* header */
+header{background:linear-gradient(135deg,var(--dark),var(--blue));color:#fff;padding:28px 40px 22px}
+.brandrow{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.logo{font-family:'Montserrat';font-weight:700;font-size:15px;letter-spacing:.5px;display:flex;align-items:center;gap:10px}
+.logo .mark{width:34px;height:34px;border-radius:50%;background:#fff;color:var(--blue);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px}
+.tagline{font-size:12px;color:#cfe0f7;font-weight:300}
+header h1{font-size:30px;font-weight:700;margin-top:16px}
+header p.sub{color:#dbe8fb;font-size:15px;margin-top:6px;max-width:760px}
+
+/* nav */
+nav{position:sticky;top:0;z-index:20;background:#fff;border-bottom:2px solid var(--blue);display:flex;flex-wrap:wrap;padding:0 22px}
+nav button{font-family:'Montserrat';font-size:13px;font-weight:600;color:#4a5568;background:none;border:none;padding:14px 15px;cursor:pointer;border-bottom:3px solid transparent;transition:.15s}
+nav button:hover{color:var(--blue);background:var(--lblue)}
+nav button.active{color:var(--blue);border-bottom-color:var(--gold)}
+
+/* sections */
+main{padding:34px 40px 60px}
+section{display:none;animation:fade .25s ease}
+section.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h2.sec{font-size:25px;color:var(--blue);border-bottom:2px solid var(--lblue);padding-bottom:8px;margin-bottom:6px}
+.lead{font-size:16px;color:#333;margin:14px 0 20px;max-width:820px}
+h3.sub{font-size:18px;color:var(--dark);margin:26px 0 10px}
+p{margin:10px 0;max-width:840px}
+
+/* pills / tags */
+.pill{display:inline-block;font-family:'Montserrat';font-weight:700;font-size:11px;padding:3px 10px;border-radius:20px;letter-spacing:.4px;vertical-align:middle}
+.pill.push{background:var(--blue);color:#fff}
+.pill.wb{background:var(--gold);color:#1a1a1a}
+.pill.no{background:var(--red);color:#fff}
+.pill.op{background:#e6f7ec;color:#1c7c3a;border:1px solid #8fd0a5}
+.pill.tr{background:var(--lblue);color:var(--dark);border:1px solid #9dc0ef}
+.pill.nl{background:#f0f0f0;color:#666;border:1px solid #ccc}
+
+code{font-family:'Consolas','SF Mono',monospace;background:var(--lblue);color:var(--dark);font-weight:700;padding:2px 7px;border-radius:5px;font-size:13.5px;white-space:nowrap}
+
+/* tables */
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+th{background:var(--blue);color:#fff;font-family:'Montserrat';font-weight:600;text-align:left;padding:11px 13px;font-size:13.5px}
+td{padding:10px 13px;border-bottom:1px solid #e3e8ef;vertical-align:top}
+tr:nth-child(even) td{background:#f7faff}
+tr:hover td{background:var(--lblue)}
+
+/* cards / callouts */
+.card{border:1px solid #e0e5ec;border-radius:12px;padding:18px 20px;margin:16px 0;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.callout{border-left:6px solid var(--blue);background:var(--lsilver);border-radius:8px;padding:16px 20px;margin:18px 0}
+.callout.gold{border-left-color:#C9A400;background:#fffdf2}
+.callout.red{border-left-color:var(--red);background:#fdf3f4}
+.callout.green{border-left-color:var(--green);background:#f2fbf5}
+.callout h4{font-size:15px;margin-bottom:6px}
+.callout.blue h4{color:var(--blue)} .callout.red h4{color:var(--red)}
+.callout.green h4{color:var(--green)} .callout.gold h4{color:#8a7400}
+.callout ul{margin:6px 0 0 18px} .callout li{margin:4px 0;font-size:14.5px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+
+.dos li{margin:8px 0} .dos b{color:var(--charcoal)}
+.chk{color:var(--green);font-weight:700;margin-right:6px}
+.x{color:var(--red);font-weight:700;margin-right:6px}
+ul.clean{list-style:none;margin:10px 0}
+ol{margin:10px 0 10px 22px} ol li{margin:7px 0}
+
+/* step lifecycle */
+.flowline{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:14px 0;font-family:'Montserrat';font-weight:600;font-size:13px}
+.flowline .st{background:var(--lblue);color:var(--dark);padding:7px 13px;border-radius:8px}
+.flowline .st.hot{background:var(--blue);color:#fff}
+.flowline .ar{color:var(--silver);font-weight:700}
+
+figure{margin:20px 0;text-align:center}
+figure svg{max-width:100%;height:auto;border:1px solid #e3e8ef;border-radius:12px;background:#fff}
+figcaption{font-size:13px;color:var(--silver);font-style:italic;margin-top:8px}
+
+footer{background:var(--charcoal);color:#cfd6df;padding:22px 40px;font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+footer a{color:var(--gold);text-decoration:none}
+.note{font-size:13px;color:#6b7280;font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brandrow">
+    <div class="logo"><span class="mark">ACS</span> ADVOCATE CLOUD SOLUTIONS</div>
+    <div class="tagline">Supercharging Legal Efficiency</div>
+  </div>
+  <h1>CaseCloud &#8596; QuickBooks Online</h1>
+  <p class="sub">How your matter-management system and your accounting connect — what moves, what stays put, and how settlements, costs, and write-offs are handled. A plain-English guide for your finance team.</p>
+</header>
+
+<nav id="nav">
+  <button data-t="overview" class="active">Overview</button>
+  <button data-t="map">Object map</button>
+  <button data-t="sync">What syncs</button>
+  <button data-t="lifecycle">Cost lifecycle</button>
+  <button data-t="writeoff">Write-offs</button>
+  <button data-t="settlement">Settlement distribution</button>
+  <button data-t="fields">Key fields</button>
+  <button data-t="rules">Golden rules</button>
+  <button data-t="setup">Setup process</button>
+</nav>
+
+<main>
+
+<!-- ================= OVERVIEW ================= -->
+<section id="overview" class="active">
+  <h2 class="sec">The big picture</h2>
+  <p class="lead">Your data lives in two systems joined by a middleware called <b>DBSync</b>, installed as a QuickBooks private app. One line captures the whole model:</p>
+  <div class="callout blue">
+    <h4>CaseCloud decides. QuickBooks records.</h4>
+    <ul>
+      <li><b>CaseCloud (Salesforce)</b> is the system of record for matters, expenses, trust ledgers, and fees — you decide there what is owed and to whom.</li>
+      <li><b>QuickBooks Online</b> is the system of record for cash — what was actually paid out and received.</li>
+      <li>The middleware moves records both ways: a <span class="pill push">PUSH</span> creates checks and deposits in QuickBooks; a <span class="pill wb">WRITE-BACK</span> returns the printed check number to CaseCloud to close the loop.</li>
+    </ul>
+  </div>
+
+  <figure id="flowfig"></figure>
+
+  <h3 class="sub">Three things drive everything</h3>
+  <ol>
+    <li><b>CaseCloud drives the action.</b> If it isn&#8217;t right in CaseCloud first, it won&#8217;t be right in QuickBooks. QuickBooks is the destination, never the starting point.</li>
+    <li><b>&#8220;Request&#8221; is the trigger.</b> Nothing flows automatically. A transaction must be Requested (correct status + a <b>Method</b> selected) before the middleware picks it up.</li>
+    <li><b>QuickBooks writes back.</b> Once the check prints, the check number returns to the CaseCloud transaction — typically within 10&#8211;15 minutes.</li>
+  </ol>
+</section>
+
+<!-- ================= OBJECT MAP ================= -->
+<section id="map">
+  <h2 class="sec">What connects to what</h2>
+  <p class="lead">Every CaseCloud record has a home in QuickBooks. This mapping is the core of the build.</p>
+  <table>
+    <tr><th>CaseCloud object</th><th>QuickBooks</th><th>Direction</th><th>What it means</th></tr>
+    <tr><td><code>advpm__Matter__c</code></td><td>Customer : Job</td><td><span class="pill push">PUSH</span></td><td>Every matter becomes a QuickBooks Customer (Job). The link is stored in a QB Customer ID field on the matter.</td></tr>
+    <tr><td><code>advpm__Expense__c</code></td><td>Check / Purchase</td><td><span class="pill push">PUSH</span></td><td>Once an expense is Requested with a Method, the middleware creates a check in QuickBooks.</td></tr>
+    <tr><td><code>advpm__Trust__c</code><br><code>advpm__Trust_Transaction__c</code></td><td>Trust Deposit &amp; Liability</td><td><span class="pill push">PUSH</span></td><td>Settlement funds post as a trust deposit; disbursements draw the trust liability down. The trust ledger updates on the matter.</td></tr>
+    <tr><td><code>advpm__Payment__c</code></td><td>Income / Deposit</td><td><span class="pill push">PUSH</span></td><td>Earned attorney fees are recognized as income in QuickBooks.</td></tr>
+    <tr><td><code>advpm__Participant__c</code> / <code>Account</code></td><td>Vendor</td><td><span class="pill push">PUSH</span></td><td>A payee (vendor, expert, provider, lienholder) maps to a QB Vendor. The W-9 flag propagates to related transactions.</td></tr>
+    <tr><td>Check Number <span class="note">(field)</span></td><td>Check No.</td><td><span class="pill wb">WRITE-BACK</span></td><td>After the check prints in QuickBooks, the number flows back into the CaseCloud transaction.</td></tr>
+    <tr><td>Integration ID <span class="note">(field)</span></td><td>Record TxnId</td><td><span class="pill wb">WRITE-BACK</span></td><td>Each record is stamped with the QuickBooks TxnId so you can deep-link straight to the exact QB record.</td></tr>
+  </table>
+  <div class="callout gold">
+    <h4>Design note</h4>
+    <p style="margin:0">CaseCloud does not ship a native &#8220;Resolution&#8221; or &#8220;Damages&#8221; object the way Litify does. We reproduce that behavior with the native Trust and Expense objects plus a lightweight custom <b>Settlement</b> record and a set of custom fields (below). This is called out so the build scope is clear up front.</p>
+  </div>
+</section>
+
+<!-- ================= WHAT SYNCS ================= -->
+<section id="sync">
+  <h2 class="sec">What syncs &#8212; and what deliberately does not</h2>
+  <p class="lead">Just as important as what moves is what stays put. Some records are intentionally kept out of QuickBooks so your books stay clean.</p>
+  <table>
+    <tr><th>Stays in CaseCloud (does NOT sync)</th><th>Why</th></tr>
+    <tr><td><b>Damages / case-value records</b></td><td>Case-valuation data, not cash. Only the actual checks paid for damages flow to QuickBooks.</td></tr>
+    <tr><td><b>Write-offs (the write-off itself)</b></td><td>A write-off updates the Expense in CaseCloud only. It generates no check and no movement in QuickBooks &#8212; that is the point.</td></tr>
+    <tr><td><b>Non-ledger entries</b></td><td>Contractual flat fees and full write-offs use a <span class="pill nl">Non-Ledger</span> account specifically so they never create a QB check.</td></tr>
+    <tr><td><b>Manual checks typed into QuickBooks</b></td><td>A check typed directly into QB instead of Requested from CaseCloud cannot write back. CaseCloud never learns about it without our intervention.</td></tr>
+  </table>
+</section>
+
+<!-- ================= COST LIFECYCLE ================= -->
+<section id="lifecycle">
+  <h2 class="sec">Cost lifecycle &#8212; paid by operating, reimbursed by trust</h2>
+  <p class="lead">When the firm advances a case cost, there are <b>two separate cash movements and two QuickBooks records</b> &#8212; that is the part people miss. The expense&#8217;s status tracks both.</p>
+
+  <div class="flowline">
+    <span class="st">Pending</span><span class="ar">&#8594;</span>
+    <span class="st">Approved</span><span class="ar">&#8594;</span>
+    <span class="st">Requested</span><span class="ar">&#8594;</span>
+    <span class="st hot">Paid</span><span class="ar">&#8594;</span>
+    <span class="st hot">Reimbursed</span>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3 class="sub" style="margin-top:0">Step 1 &#8212; Firm advances the cost</h3>
+      <p>Expense Requested with <b>Disbursement Account = <span class="pill op">Operating</span></b>, Method = Check.</p>
+      <p><b>QuickBooks:</b> a check from the <b>Operating</b> bank account to the vendor.</p>
+      <p><b>Result:</b> check number writes back; status &#8594; <b>Paid</b> (the firm paid it from operating).</p>
+    </div>
+    <div class="card">
+      <h3 class="sub" style="margin-top:0">Step 2 &#8212; Trust reimburses the firm</h3>
+      <p>A reimbursement transaction with <b>Disbursement Account = <span class="pill tr">Trust</span></b>, once settlement funds are in trust.</p>
+      <p><b>QuickBooks:</b> a check/transfer from the <b>Trust</b> account back to Operating.</p>
+      <p><b>Result:</b> &#8220;Amount Reimbursed from Trust&#8221; fills; status auto-flips <b>Paid &#8594; Reimbursed</b>.</p>
+    </div>
+  </div>
+
+  <div class="callout red">
+    <h4>The #1 failure to avoid</h4>
+    <p style="margin:0">Someone jumps <b>Approved &#8594; Paid</b> by hand. That shortcut skips the sync entirely: no QB check, the status never flips to Reimbursed, and the reimbursed amount is wrong. Let the flow drive the status &#8212; never set &#8220;Paid&#8221; manually unless you are recording a check that was truly cut outside the system.</p>
+  </div>
+</section>
+
+<!-- ================= WRITE-OFFS ================= -->
+<section id="writeoff">
+  <h2 class="sec">Write-offs</h2>
+  <p class="lead">A write-off adjusts the expense in CaseCloud only &#8212; it <b>never creates a QuickBooks check</b>. That is the whole purpose of the <span class="pill nl">Non-Ledger</span> path.</p>
+
+  <h3 class="sub">The fields that make it work</h3>
+  <table>
+    <tr><th>Custom field (ACS-added)</th><th>Type</th><th>Purpose</th></tr>
+    <tr><td>Amount Written Off</td><td>Currency</td><td>The portion the firm is not collecting.</td></tr>
+    <tr><td>Amount Reimbursed from Trust</td><td>Currency</td><td>What trust actually paid back (the &#8220;paid back to firm&#8221; amount).</td></tr>
+    <tr><td>Amount Paid After Reimbursement</td><td>Formula</td><td>= Amount Written Off + Amount Reimbursed from Trust.</td></tr>
+    <tr><td>Disbursement Account</td><td>Picklist</td><td><span class="pill op">Operating</span> &middot; <span class="pill tr">Trust</span> &middot; <span class="pill nl">Non-Ledger</span></td></tr>
+  </table>
+
+  <h3 class="sub">The rules that keep it clean</h3>
+  <ul class="clean dos">
+    <li><span class="chk">&#10003;</span> A <b>full write-off</b> generates a disbursement with <b>Disbursement Account = Non-Ledger</b> so the middleware skips it. Build the flow to set Non-Ledger explicitly and validate it before status hits Requested.</li>
+    <li><span class="chk">&#10003;</span> <b>Reimburse first, then write off</b> the remainder. The partial-write-off math only balances in that order.</li>
+    <li><span class="chk">&#10003;</span> &#8220;Amount Paid After Reimbursement&#8221; <i>intentionally</i> includes the write-off &#8212; that is the formula by design, not double-counting.</li>
+    <li><span class="chk">&#10003;</span> Give the team <b>Write-Off</b> and <b>Reverse Write-Off</b> quick actions on the matter so nobody hand-edits the fields.</li>
+  </ul>
+
+  <div class="callout gold">
+    <h4>Watch for the &#8220;Operating instead of Non-Ledger&#8221; bug</h4>
+    <p style="margin:0">The classic failure is a full write-off that stamps <span class="pill op">Operating</span> on the disbursement instead of <span class="pill nl">Non-Ledger</span> &#8212; it then tries to push a real check to QuickBooks. If you catch it before status moves to Requested, change the account to Non-Ledger. If a QB check already generated, void it and call ACS.</p>
+  </div>
+</section>
+
+<!-- ================= SETTLEMENT DISTRIBUTION ================= -->
+<section id="settlement">
+  <h2 class="sec">Automating settlement distribution</h2>
+  <p class="lead">When a settlement arrives, CaseCloud distributes the gross recovery in a fixed order &#8212; the <b>waterfall</b>. The <b>Settlement</b> record is the trigger; a &#8220;Distribute Settlement&#8221; action generates the child disbursements, each pre-set with a Method and Disbursement Account and left in <b>Requested</b> status for the middleware to push.</p>
+
+  <figure id="waterfig"></figure>
+
+  <h3 class="sub">The waterfall, in order</h3>
+  <ol>
+    <li><b>Attorney fee</b> &#8212; auto-calculated from the matter&#8217;s <code>advpm__Fee_Arrangement__c</code> contingency % &#8594; drawn from Trust, recognized as income.</li>
+    <li><b>Reimburse firm-advanced costs</b> &#8212; the operating&#8594;trust cycle, for every expense still at &#8220;Paid.&#8221;</li>
+    <li><b>Pay liens / providers / experts</b> &#8212; checks from Trust to each <code>advpm__Participant__c</code> payee.</li>
+    <li><b>Net to client</b> &#8212; check from Trust to the client.</li>
+    <li><b>Write off</b> any uncollectable remainder &#8212; <i>after</i> reimbursement, using the Non-Ledger path.</li>
+  </ol>
+
+  <div class="callout red">
+    <h4>Guardrails the automation must enforce</h4>
+    <ul>
+      <li>Trust math pulls from <b>Amount Received</b> (the actual deposit), never the gross settlement face value.</li>
+      <li>Every generated transaction gets a <b>Method</b> populated, or it silently fails to sync.</li>
+      <li><b>Validate</b> that total distributions equal Amount Received, so trust is never over-drawn.</li>
+      <li><b>One-to-one matching</b> &#8212; the model can&#8217;t split a transaction into part-applied / part-credited. If an amount changes, void cleanly and reissue rather than splitting.</li>
+    </ul>
+  </div>
+  <p class="note">Native CaseCloud does the heavy lifting for the ledger (<code>advpm__Trust__c</code> / <code>advpm__Trust_Transaction__c</code>) and the fee calc (<code>advpm__Fee_Arrangement__c</code>); the waterfall sequencing and the QB push are custom flow plus DBSync.</p>
+</section>
+
+<!-- ================= KEY FIELDS ================= -->
+<section id="fields">
+  <h2 class="sec">The key fields we configure</h2>
+  <p class="lead">These are the fields that, when missing or wrong, cause most sync failures. We build and place them during setup; your team keeps them accurate.</p>
+  <table>
+    <tr><th>On object</th><th>Field</th><th>What it does / what to watch</th></tr>
+    <tr><td>Transaction</td><td><b>Method</b></td><td>Tells the system how money moves (Check, ACH, Credit Card, Non-Ledger). If blank, the transaction never reaches QuickBooks. Populate before saving.</td></tr>
+    <tr><td>Transaction</td><td><b>Disbursement Account</b></td><td>Operating / Trust / Non-Ledger &#8212; determines which QuickBooks register the money draws from (and whether it syncs at all).</td></tr>
+    <tr><td>Transaction</td><td><b>Integration Status</b></td><td>Tracks lifecycle (Generated &#8594; Requested &#8594; Generated &#8594; Reimbursed). Automation-driven &#8212; manual edits break the trust roll-up.</td></tr>
+    <tr><td>Transaction</td><td><b>Check Number</b></td><td>Populated by QuickBooks after the check prints. Blank if the check was made manually in QB or the write-back is paused.</td></tr>
+    <tr><td>Transaction</td><td><b>Integration ID</b></td><td>The QuickBooks TxnId &#8212; proof the record linked. Blank means it never reached QB.</td></tr>
+    <tr><td>Expense</td><td><b>Amount Reimbursed from Trust</b></td><td>How much of a firm-paid expense trust has repaid. Auto-populates; blank on a paid expense means the automation did not fire.</td></tr>
+    <tr><td>Expense</td><td><b>Status</b></td><td>Pending &#8594; Approved &#8594; Requested &#8594; Paid &#8594; Reimbursed. Auto-flips to Reimbursed when the write-back lands.</td></tr>
+    <tr><td>Matter</td><td><b>QB Customer ID</b></td><td>The link to the QB Customer. Diagnostic &#8212; if blank on an older matter, we may need to relink.</td></tr>
+    <tr><td>Account / Party</td><td><b>W-9 Obtained</b></td><td>Vendor has a W-9 on file. Propagates to every transaction with that vendor.</td></tr>
+  </table>
+</section>
+
+<!-- ================= GOLDEN RULES ================= -->
+<section id="rules">
+  <h2 class="sec">The rules that keep it clean</h2>
+  <p class="lead">If everyone follows these, the large majority of sync problems never happen.</p>
+  <div class="grid2">
+    <div class="card">
+      <h3 class="sub" style="margin-top:0;color:var(--green)">Do</h3>
+      <ul class="clean dos">
+        <li><span class="chk">&#10003;</span> Always populate <b>Method</b> before saving. No Method = no sync &#8212; the single most common silent failure.</li>
+        <li><span class="chk">&#10003;</span> Create fee and referral transactions from the correct subtab, not the parent tab.</li>
+        <li><span class="chk">&#10003;</span> Route every deposit through a <b>Settlement</b> record &#8212; the trust ledger keys off it.</li>
+        <li><span class="chk">&#10003;</span> <b>Reimburse first, then write off</b> the remaining balance.</li>
+        <li><span class="chk">&#10003;</span> Set the right <b>Disbursement Account</b> (Operating / Trust / Non-Ledger) every time.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3 class="sub" style="margin-top:0;color:var(--red)">Don&#8217;t</h3>
+      <ul class="clean dos">
+        <li><span class="x">&#10007;</span> Don&#8217;t type checks directly into QuickBooks for matter disbursements &#8212; they can&#8217;t write back.</li>
+        <li><span class="x">&#10007;</span> Don&#8217;t jump a transaction <b>Approved &#8594; Paid</b> manually &#8212; it bypasses the whole sync.</li>
+        <li><span class="x">&#10007;</span> Don&#8217;t manually edit <b>Integration Status</b> &#8212; automation drives it; edits corrupt the trust roll-up.</li>
+        <li><span class="x">&#10007;</span> Don&#8217;t delete a QB record that came from CaseCloud without marking CaseCloud Paid first &#8212; it re-creates.</li>
+        <li><span class="x">&#10007;</span> Don&#8217;t re-use or duplicate vendor records &#8212; flag suspected duplicates.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SETUP ================= -->
+<section id="setup">
+  <h2 class="sec">How we set it up &#8212; our process</h2>
+  <p class="lead">The sequence we follow to stand the integration up on your org. Most implementations run three to five weeks, depending on data volume and how much cleanup the existing books need.</p>
+  <table>
+    <tr><th>#</th><th>Phase</th><th>What happens</th></tr>
+    <tr><td>1</td><td>Discovery &amp; chart-of-accounts alignment</td><td>Map your CaseCloud matter, expense, and trust structure to your QuickBooks chart of accounts &#8212; operating bank, trust bank, trust liability, expense categories, income accounts.</td></tr>
+    <tr><td>2</td><td>Connect the middleware</td><td>Install DBSync as a QuickBooks private app and a Salesforce connected app; authenticate both sides securely.</td></tr>
+    <tr><td>3</td><td>Object &amp; field mapping</td><td>Configure the record mappings and build the custom fields (Method, Disbursement Account, Integration Status/ID, Check Number, QB Customer ID, W-9, write-off fields).</td></tr>
+    <tr><td>4</td><td>Automation &amp; triggers</td><td>Build the &#8220;Request&#8221; trigger, write-back jobs, status roll-ups, the trust-ledger calc, the operating&#8594;trust reimbursement flow, and the settlement-distribution waterfall.</td></tr>
+    <tr><td>5</td><td>Seed &amp; de-duplicate</td><td>Sync existing matters and vendors into QuickBooks and clean up duplicates before go-live.</td></tr>
+    <tr><td>6</td><td>UAT</td><td>Test one of each together: matter&#8594;customer, operating expense&#8594;check, trust reimbursement, settlement&#8594;deposit&#8594;full distribution, and a write-off.</td></tr>
+    <tr><td>7</td><td>Go-live, reference tool &amp; training</td><td>Deliver this reference tool, train your team on the golden rules, and hand off with a named ACS escalation path.</td></tr>
+  </table>
+  <div class="callout green">
+    <h4>What you get at go-live</h4>
+    <ul>
+      <li>A working two-way sync between CaseCloud and QuickBooks Online.</li>
+      <li>Automated cost reimbursement and settlement distribution with trust-balance safeguards.</li>
+      <li>This always-current reference tool for your finance team, plus a named ACS escalation path.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div>&copy; 2026 Advocate Cloud Solutions &middot; Supercharging Legal Efficiency</div>
+  <div>Jason Adams, Founder &middot; <a href="mailto:jason@advocatecloudsolutions.com">jason@advocatecloudsolutions.com</a> &middot; (612) 528-3008</div>
+</footer>
+</div>
+
+<!-- ===== main flow diagram (injected) ===== -->
+<template id="flowsvg">
+<svg viewBox="0 0 1180 720" xmlns="http://www.w3.org/2000/svg" font-family="Montserrat,Arial,sans-serif">
+  <defs>
+    <marker id="ab" markerWidth="11" markerHeight="11" refX="8" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11 Z" fill="#0057B8"/></marker>
+    <marker id="ag" markerWidth="11" markerHeight="11" refX="8" refY="5.5" orient="auto"><path d="M0,0 L11,5.5 L0,11 Z" fill="#C9A400"/></marker>
+  </defs>
+  <rect width="1180" height="720" fill="#ffffff"/>
+  <text x="40" y="46" font-size="15" fill="#555" font-family="Lato,Arial">CaseCloud drives the action &#183; QuickBooks records the cash</text>
+
+  <text x="185" y="86" font-size="16" font-weight="700" fill="#0057B8" text-anchor="middle">CASECLOUD</text>
+  <text x="185" y="106" font-size="11.5" fill="#777" text-anchor="middle" font-family="Lato,Arial">system of record &#8212; matters &amp; ledgers</text>
+  <text x="590" y="86" font-size="16" font-weight="700" fill="#0057B8" text-anchor="middle">DBSYNC</text>
+  <text x="590" y="106" font-size="11.5" fill="#777" text-anchor="middle" font-family="Lato,Arial">middleware &#8212; both directions</text>
+  <text x="995" y="86" font-size="16" font-weight="700" fill="#0057B8" text-anchor="middle">QUICKBOOKS</text>
+  <text x="995" y="106" font-size="11.5" fill="#777" text-anchor="middle" font-family="Lato,Arial">system of record &#8212; cash</text>
+
+  <rect x="40" y="125" width="290" height="330" rx="12" fill="#fff" stroke="#0057B8" stroke-width="2"/>
+  <g font-family="Consolas,monospace" font-size="13" font-weight="700" fill="#003D80">
+    <rect x="58" y="147" width="254" height="38" rx="7" fill="#E8F0FE"/><text x="74" y="171">advpm__Matter__c</text>
+    <rect x="58" y="195" width="254" height="38" rx="7" fill="#E8F0FE"/><text x="74" y="219">advpm__Expense__c</text>
+    <rect x="58" y="243" width="254" height="38" rx="7" fill="#E8F0FE"/><text x="74" y="262" font-size="11.5">advpm__Trust_Transaction__c</text>
+    <rect x="58" y="291" width="254" height="38" rx="7" fill="#E8F0FE"/><text x="74" y="315">advpm__Payment__c</text>
+    <rect x="58" y="339" width="254" height="38" rx="7" fill="#E8F0FE"/><text x="74" y="358" font-size="11.5">advpm__Participant__c / Account</text>
+    <rect x="58" y="387" width="254" height="50" rx="7" fill="#F5F5F5"/>
+    <text x="74" y="406" font-size="11" fill="#888" font-family="Lato,Arial">Stays in CaseCloud:</text>
+    <text x="74" y="424" font-size="11" fill="#888" font-family="Lato,Arial">Damages &#183; Write-offs &#183; Non-ledger</text>
+  </g>
+
+  <rect x="470" y="205" width="240" height="170" rx="12" fill="#0057B8"/>
+  <text x="590" y="245" font-size="18" font-weight="700" fill="#fff" text-anchor="middle">DBSync</text>
+  <text x="590" y="268" font-size="12" fill="#cfe0f7" text-anchor="middle" font-family="Lato,Arial">QuickBooks private app</text>
+  <line x1="498" y1="284" x2="682" y2="284" stroke="#4E8AD6"/>
+  <text x="590" y="308" font-size="12.5" fill="#fff" text-anchor="middle" font-family="Lato,Arial">Trigger = &#8220;Request&#8221;</text>
+  <rect x="505" y="326" width="170" height="30" rx="15" fill="#FFD700"/>
+  <text x="590" y="346" font-size="12" font-weight="700" fill="#1a1a1a" text-anchor="middle">Lag: 10&#8211;15 min</text>
+
+  <rect x="850" y="125" width="290" height="330" rx="12" fill="#fff" stroke="#0057B8" stroke-width="2"/>
+  <g font-family="Montserrat,Arial" font-size="13" font-weight="700" fill="#003D80">
+    <rect x="868" y="147" width="254" height="38" rx="7" fill="#E8F0FE"/><text x="884" y="171">Customer : Job</text>
+    <rect x="868" y="195" width="254" height="38" rx="7" fill="#E8F0FE"/><text x="884" y="219">Check / Purchase</text>
+    <rect x="868" y="243" width="254" height="38" rx="7" fill="#E8F0FE"/><text x="884" y="262" font-size="12">Trust Deposit &amp; Liability</text>
+    <rect x="868" y="291" width="254" height="38" rx="7" fill="#E8F0FE"/><text x="884" y="315">Income / Deposit</text>
+    <rect x="868" y="339" width="254" height="38" rx="7" fill="#E8F0FE"/><text x="884" y="363">Vendor</text>
+    <rect x="868" y="387" width="254" height="50" rx="7" fill="#F5F5F5"/>
+    <text x="884" y="406" font-size="11" fill="#888" font-family="Lato,Arial">Reconciliation lives here &#8212;</text>
+    <text x="884" y="424" font-size="11" fill="#888" font-family="Lato,Arial">not for matter data entry.</text>
+  </g>
+
+  <line x1="330" y1="260" x2="462" y2="260" stroke="#0057B8" stroke-width="5" marker-end="url(#ab)"/>
+  <rect x="352" y="228" width="90" height="26" rx="13" fill="#0057B8"/><text x="397" y="246" font-size="13" font-weight="700" fill="#fff" text-anchor="middle">PUSH</text>
+  <line x1="710" y1="260" x2="842" y2="260" stroke="#0057B8" stroke-width="5" marker-end="url(#ab)"/>
+
+  <path d="M850,412 L332,412" stroke="#C9A400" stroke-width="4.5" marker-end="url(#ag)"/>
+  <rect x="520" y="399" width="140" height="26" rx="13" fill="#C9A400"/><text x="590" y="417" font-size="13" font-weight="700" fill="#1a1a1a" text-anchor="middle">WRITE-BACK</text>
+
+  <rect x="40" y="500" width="1100" height="180" rx="12" fill="#1A1A1A"/>
+  <text x="66" y="536" font-size="15" font-weight="700" fill="#FFD700">The mental model</text>
+  <text x="66" y="566" font-size="13.5" fill="#fff" font-family="Lato,Arial">1.  You decide what is owed and to whom in CaseCloud &#8212; QuickBooks is the destination, never the start.</text>
+  <text x="66" y="592" font-size="13.5" fill="#fff" font-family="Lato,Arial">2.  A transaction only moves once it is &#8220;Requested&#8221; with a Method set.</text>
+  <text x="66" y="618" font-size="13.5" fill="#fff" font-family="Lato,Arial">3.  QuickBooks writes the printed check number back to close the loop.</text>
+  <text x="66" y="656" font-size="12.5" fill="#DC3545" font-family="Lato,Arial">Does NOT sync: damages &#183; write-offs &#183; non-ledger entries &#183; manual QB checks &#183; anything without a Method.</text>
+</svg>
+</template>
+
+<!-- ===== settlement waterfall diagram (injected) ===== -->
+<template id="watersvg">
+<svg viewBox="0 0 1180 760" xmlns="http://www.w3.org/2000/svg" font-family="Montserrat,Arial,sans-serif">
+  <defs><marker id="aw" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#0057B8"/></marker></defs>
+  <rect width="1180" height="760" fill="#ffffff"/>
+  <text x="40" y="44" font-size="15" fill="#555" font-family="Lato,Arial">Settlement distribution waterfall &#8212; the &#8220;Distribute Settlement&#8221; action generates each disbursement in order</text>
+
+  <rect x="360" y="66" width="460" height="66" rx="12" fill="#0057B8"/>
+  <text x="590" y="94" font-size="16" font-weight="700" fill="#fff" text-anchor="middle">Settlement received  &#8594;  Trust Deposit</text>
+  <text x="590" y="116" font-size="12" fill="#cfe0f7" text-anchor="middle" font-family="Lato,Arial">Settlement record &#183; Amount Received (actual deposit) &#183; trust ledger updates</text>
+  <line x1="590" y1="132" x2="590" y2="162" stroke="#0057B8" stroke-width="3" marker-end="url(#aw)"/>
+
+  <g font-family="Lato,Arial">
+    <rect x="120" y="168" width="940" height="72" rx="10" fill="#E8F0FE" stroke="#9dc0ef"/>
+    <circle cx="158" cy="204" r="18" fill="#0057B8"/><text x="158" y="210" font-size="16" font-weight="700" fill="#fff" text-anchor="middle" font-family="Montserrat">1</text>
+    <text x="196" y="198" font-size="15" font-weight="700" fill="#003D80" font-family="Montserrat">Attorney fee</text>
+    <text x="196" y="220" font-size="12.5" fill="#444">Contingency % from advpm__Fee_Arrangement__c &#8212; drawn from Trust, recognized as income</text>
+    <rect x="812" y="184" width="230" height="40" rx="8" fill="#fff" stroke="#9dc0ef"/>
+    <text x="927" y="200" font-size="11.5" fill="#003D80" text-anchor="middle" font-weight="700" font-family="Montserrat">QB: Income / Deposit</text>
+    <text x="927" y="216" font-size="10.5" fill="#777" text-anchor="middle">from Trust</text>
+    <line x1="590" y1="240" x2="590" y2="256" stroke="#0057B8" stroke-width="2.5" marker-end="url(#aw)"/>
+
+    <rect x="120" y="262" width="940" height="72" rx="10" fill="#E8F0FE" stroke="#9dc0ef"/>
+    <circle cx="158" cy="298" r="18" fill="#0057B8"/><text x="158" y="304" font-size="16" font-weight="700" fill="#fff" text-anchor="middle" font-family="Montserrat">2</text>
+    <text x="196" y="292" font-size="15" font-weight="700" fill="#003D80" font-family="Montserrat">Reimburse firm-advanced costs</text>
+    <text x="196" y="314" font-size="12.5" fill="#444">Every expense still at &#8220;Paid&#8221; &#8212; Trust reimburses Operating; status flips to Reimbursed</text>
+    <rect x="812" y="278" width="230" height="40" rx="8" fill="#fff" stroke="#9dc0ef"/>
+    <text x="927" y="294" font-size="11.5" fill="#003D80" text-anchor="middle" font-weight="700" font-family="Montserrat">QB: Trust &#8594; Operating</text>
+    <text x="927" y="310" font-size="10.5" fill="#777" text-anchor="middle">transfer / check</text>
+    <line x1="590" y1="334" x2="590" y2="350" stroke="#0057B8" stroke-width="2.5" marker-end="url(#aw)"/>
+
+    <rect x="120" y="356" width="940" height="72" rx="10" fill="#E8F0FE" stroke="#9dc0ef"/>
+    <circle cx="158" cy="392" r="18" fill="#0057B8"/><text x="158" y="398" font-size="16" font-weight="700" fill="#fff" text-anchor="middle" font-family="Montserrat">3</text>
+    <text x="196" y="386" font-size="15" font-weight="700" fill="#003D80" font-family="Montserrat">Pay liens / providers / experts</text>
+    <text x="196" y="408" font-size="12.5" fill="#444">Checks from Trust to each advpm__Participant__c payee</text>
+    <rect x="812" y="372" width="230" height="40" rx="8" fill="#fff" stroke="#9dc0ef"/>
+    <text x="927" y="388" font-size="11.5" fill="#003D80" text-anchor="middle" font-weight="700" font-family="Montserrat">QB: Checks from Trust</text>
+    <text x="927" y="404" font-size="10.5" fill="#777" text-anchor="middle">to vendors</text>
+    <line x1="590" y1="428" x2="590" y2="444" stroke="#0057B8" stroke-width="2.5" marker-end="url(#aw)"/>
+
+    <rect x="120" y="450" width="940" height="72" rx="10" fill="#E8F0FE" stroke="#9dc0ef"/>
+    <circle cx="158" cy="486" r="18" fill="#0057B8"/><text x="158" y="492" font-size="16" font-weight="700" fill="#fff" text-anchor="middle" font-family="Montserrat">4</text>
+    <text x="196" y="480" font-size="15" font-weight="700" fill="#003D80" font-family="Montserrat">Net to client</text>
+    <text x="196" y="502" font-size="12.5" fill="#444">Remaining balance &#8212; check from Trust to the client</text>
+    <rect x="812" y="466" width="230" height="40" rx="8" fill="#fff" stroke="#9dc0ef"/>
+    <text x="927" y="482" font-size="11.5" fill="#003D80" text-anchor="middle" font-weight="700" font-family="Montserrat">QB: Check from Trust</text>
+    <text x="927" y="498" font-size="10.5" fill="#777" text-anchor="middle">to client</text>
+    <line x1="590" y1="522" x2="590" y2="538" stroke="#C9A400" stroke-width="2.5" marker-end="url(#aw)"/>
+
+    <rect x="120" y="544" width="940" height="72" rx="10" fill="#F5F5F5" stroke="#ccc"/>
+    <circle cx="158" cy="580" r="18" fill="#8a7400"/><text x="158" y="586" font-size="16" font-weight="700" fill="#fff" text-anchor="middle" font-family="Montserrat">5</text>
+    <text x="196" y="574" font-size="15" font-weight="700" fill="#8a7400" font-family="Montserrat">Write off the remainder</text>
+    <text x="196" y="596" font-size="12.5" fill="#444">Any uncollectable balance &#8212; AFTER reimbursement &#8212; via the Non-Ledger path</text>
+    <rect x="812" y="560" width="230" height="40" rx="8" fill="#fff" stroke="#ccc"/>
+    <text x="927" y="576" font-size="11.5" fill="#8a7400" text-anchor="middle" font-weight="700" font-family="Montserrat">Does NOT hit QB</text>
+    <text x="927" y="592" font-size="10.5" fill="#777" text-anchor="middle">Non-Ledger</text>
+  </g>
+
+  <rect x="40" y="640" width="1100" height="96" rx="12" fill="#fdf3f4" stroke="#f2b8bd"/>
+  <text x="66" y="670" font-size="14" font-weight="700" fill="#DC3545" font-family="Montserrat">Guardrails</text>
+  <text x="66" y="694" font-size="12.5" fill="#333" font-family="Lato,Arial">&#8226; Pull from Amount Received, not gross &#160;&#160; &#8226; Every transaction needs a Method &#160;&#160; &#8226; Validate total distributed = Amount Received</text>
+  <text x="66" y="716" font-size="12.5" fill="#333" font-family="Lato,Arial">&#8226; One-to-one matching &#8212; void &amp; reissue rather than split a transaction &#160;&#160; &#8226; Reimburse before you write off</text>
+</svg>
+</template>
+
+<script>
+(function(){
+  document.getElementById('flowfig').innerHTML =
+     document.getElementById('flowsvg').innerHTML +
+     '<figcaption>Figure 1 &#8212; The end-to-end flow between CaseCloud, DBSync, and QuickBooks Online.</figcaption>';
+  document.getElementById('waterfig').innerHTML =
+     document.getElementById('watersvg').innerHTML +
+     '<figcaption>Figure 2 &#8212; The settlement-distribution waterfall, in enforced order.</figcaption>';
+
+  var btns = document.querySelectorAll('#nav button');
+  var secs = document.querySelectorAll('main section');
+  function show(t){
+    secs.forEach(function(s){ s.classList.toggle('active', s.id===t); });
+    btns.forEach(function(b){ b.classList.toggle('active', b.dataset.t===t); });
+    window.scrollTo({top:0,behavior:'instant' in window ? 'instant':'auto'});
+  }
+  btns.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.t); }); });
+})();
+</script>
+</body>
+</html>
